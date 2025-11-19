@@ -1,0 +1,63 @@
+# =======================================================
+#Day 3: Unbeatable TO-DO List - a@dary33 | #PythonPower
+# Saves to file. Never Kill your Ego, always save it.
+# =======================================================
+
+TODO_FILE = "Ego_TODO_List.txt"
+
+def load_missions():
+    try:
+        with open(TODO_FILE, "r") as f:
+            return [line.strip() for line in f.readlines()]
+    except FileNotFoundError:
+        return []
+
+def save_missions(missions):
+    with open(TODO_FILE, "w") as f:
+        for m in missions:
+            f.write(m + "\n")
+
+# Load existing missions
+missions = load_missions()
+
+print("@a_dary33's Unbeatable Mission Control")
+
+def main_loop(missions):
+    while True:
+        print("\n" + "="*40)
+        if missions:
+            for i, mission in enumerate(missions, 1):
+                print(f"{i}. {mission}")
+        else:
+            print("No missions yet. Add one, Kleeon!")
+
+        print("\n(a)dd | (d)elete | (q)uit")
+        choice = input("→ ").lower().strip()
+
+        if choice == "a":
+            new = input("New mission: ").strip()
+            if new:
+                missions.append(new)
+                save_missions(missions)
+                print("→ Mission locked in.")
+        elif choice == "d":
+            if missions:
+                try:
+                    idx_str = input(f"Delete # (1-{len(missions)}): ").strip()
+                    idx = int(idx_str) - 1
+                    removed = missions.pop(idx)
+                    save_missions(missions)
+                    print(f"→ {removed} → Destroyed")
+                except (ValueError, IndexError):
+                    print("Invalid number. Try again.")
+            else:
+                print("Nothing to delete.")
+        elif choice == "q":
+            print("\nLegend. Mission saved. See you, Kleeon!")
+            break
+        else:
+            print("Unknown command. Please choose a, d, or q.")
+
+if __name__ == "__main__":
+    main_loop(missions)
+
