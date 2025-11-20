@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.env
+venv/
+my_missions.txt
+visitors.txt

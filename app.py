@@ -2,7 +2,7 @@
 # Day 5: Kleeon Empire - Dark Mode + Todo List @a_dary33 |PythonPower
 # ======================================================================
 
-from flask import Flask, render_template_string, request
+from flask import Flask, render_template_string, request, redirect
 import os
 app = Flask(__name__)
 
@@ -48,33 +48,90 @@ HTML = """
     button { padding: 15px; font-size: 20px; margion: 20px; }
     </style>
     </head>
-    <body class ="{{ mode }}">
-    <h1>I AM KLEEON - @a_dary33</h1>
-    <h2>Humble Enough to know i can be replaced, Wise Enough to know that there is nobody else like me.</h2>
-    <p>Visitors conquered: <b>{{ visitors }}</b></p>
-    <button onclick="document.body.classList.toggle('dark'); document.body.classList.toggle('light')">
-    TOGGLE DARK MODE
-    </button>
+        <body class ="{{ mode }}">
+        <h1>I AM KLEEON - @a_dary33</h1>
+        <h2>Humble Enough to know i can be replaced, Wise Enough to know that there is nobody else like me.</h2>
+        <p>Visitors conquered: <b>{{ visitors }}</b></p>
 
-    <h3>MY MISSIONS (LIVE FROM FILE)</h3>
-    <ul>
-    {% for todo in todos %}
-    <li style="font-size: 20px;">{{ todo }}</li>
-    {% else %}
-    <li>No missions yet. Add one, Kleeon!</li>
-    {% endfor %}
-    </ul>
+        <button id="toggle-mode">
+        TOGGLE DARK MODE
+        </button>
 
-    <p><i>Day 5 of #PytonPower - KLEEON EMPIRE</i></p>
-    </body>
+        <h3>MY MISSIONS (LIVE FROM FILE)</h3>
+        <form id="add-form" method="POST" action="/add" style="margin-bottom:20px;">
+            <input name="todo" placeholder="Add a mission" style="padding:10px; font-size:16px; width:300px;" required />
+            <button type="submit" style="padding:10px; font-size:16px;">Add</button>
+        </form>
+
+        <ul>
+        {% for todo in todos %}
+        <li style="font-size: 20px;">{{ todo }}</li>
+        {% else %}
+        <li>No missions yet. Add one, Kleeon!</li>
+        {% endfor %}
+        </ul>
+
+        <p><i>Day 5 of #PytonPower - KLEEON EMPIRE</i></p>
+
+        <script>
+        // Cookie helpers
+        function setCookie(name, value, days) {
+            var expires = "";
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days*24*60*60*1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+        }
+        function getCookie(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for(var i=0;i < ca.length;i++) {
+                var c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+            }
+            return null;
+        }
+
+        function applyMode(mode) {
+            document.body.className = mode;
+            setCookie('mode', mode, 365);
+        }
+
+        document.getElementById('toggle-mode').addEventListener('click', function(){
+            var current = document.body.className === 'dark' ? 'dark' : 'light';
+            var next = current === 'dark' ? 'light' : 'dark';
+            applyMode(next);
+        });
+
+        // On load, read cookie and apply
+        (function(){
+            var mode = getCookie('mode') || '{{ mode }}' || 'light';
+            document.body.className = mode;
+        })();
+        </script>
+        </body>
     </html>
     """
 
 @app.route("/")
 def home():
     visitors = add_visitor()
-    mode = request.args.get("mode", "light")
-    return render_template_string(HTML, visitors=visitors, todos=todos, mode=mode)
+    # Reload todos from file so newly-added items appear immediately
+    current_todos = load_todos()
+    mode = request.cookies.get('mode', 'light')
+    return render_template_string(HTML, visitors=visitors, todos=current_todos, mode=mode)
+
+
+@app.route('/add', methods=['POST'])
+def add():
+    item = request.form.get('todo','').strip()
+    if item:
+        with open(TODO_FILE, 'a', encoding='utf-8') as f:
+            f.write(item + '\n')
+    return redirect('/')
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
