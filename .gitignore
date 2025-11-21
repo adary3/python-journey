@@ -4,3 +4,4 @@ __pycache__/
 venv/
 my_missions.txt
 visitors.txt
+guestbook.json
