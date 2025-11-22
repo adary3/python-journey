@@ -23,5 +23,16 @@ Features:
 - Dark mode toggle that persists via a cookie
 - Guestbook: `day6-guestbook.py` stores messages in `guestbook.json` and shows them on `/`
 
+Admin nuke
+- There's a password-protected admin page at `/admin`.
+- Set the password via the `ADMIN_PASSWORD` environment variable before running. Example (cmd.exe):
+
+```cmd
+set ADMIN_PASSWORD=yourStrongPassword
+python day6-guestbook.py
+```
+
+Visit `http://127.0.0.1:5000/admin` to enter the password and access the nuke button.
+
 Notes:
 - `my_missions.txt`, `visitors.txt`, and `guestbook.json` are local files created/updated by the app.

@@ -3,6 +3,7 @@
 #===============================================================
 
 from flask import Flask, render_template_string, request
+import os
 import requests
 import json
 from datetime import datetime
@@ -18,6 +19,7 @@ FORM_URL = "https://docs.google.com/spreadsheets/d/12R_GxZlXCPkkQMHTJ9dtbINljC-d
 
 # Local storage for messages so they appear on the homepage
 GUESTBOOK_FILE = "guestbook.json"
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'kleeon')
 
 HTML = """
 <!DOCTYPE html>
@@ -109,6 +111,59 @@ def save_message(timestamp, message):
     msgs.append(entry)
     with open(GUESTBOOK_FILE, 'w', encoding='utf-8') as f:
         json.dump(msgs, f, ensure_ascii=False, indent=2)
+
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    # Simple password-protected admin page. Password comes from ADMIN_PASSWORD env var.
+    if request.method == 'POST':
+        pwd = request.form.get('password', '')
+        if pwd == ADMIN_PASSWORD:
+            messages = load_messages()
+            count = len(messages)
+            return render_template_string('''
+                <html><body style="background:black;color:#00ff41;text-align:center;padding:40px;">
+                <h1>Admin - Kleeon Guestbook</h1>
+                <p>Messages stored: <b>{{count}}</b></p>
+                <form method="post" action="/nuke">
+                  <p>Type password again to CONFIRM nuke:</p>
+                  <input type="password" name="password" required />
+                  <button type="submit" style="margin-left:8px;">NUKE GUESTBOOK</button>
+                </form>
+                <p><a href="/" style="color:#99ffb0;">Return home</a></p>
+                </body></html>
+            ''', count=count)
+        else:
+            return render_template_string('<html><body style="background:black;color:#ff6b6b;text-align:center;padding:40px;"><h1>Wrong password</h1><p><a href="/admin">Try again</a></p></body></html>')
+
+    # GET -> show password entry form
+    return render_template_string('''
+        <html><body style="background:black;color:#00ff41;text-align:center;padding:40px;">
+        <h1>Admin Login</h1>
+        <form method="post">
+          <input type="password" name="password" placeholder="admin password" required />
+          <button type="submit" style="margin-left:8px;">Enter</button>
+        </form>
+        <p><a href="/" style="color:#99ffb0;">Return home</a></p>
+        </body></html>
+    ''')
+
+
+@app.route('/nuke', methods=['POST'])
+def nuke():
+    pwd = request.form.get('password', '')
+    if pwd != ADMIN_PASSWORD:
+        return ("Unauthorized", 403)
+
+    # clear guestbook by writing an empty list
+    try:
+        with open(GUESTBOOK_FILE, 'w', encoding='utf-8') as f:
+            json.dump([], f)
+    except Exception as e:
+        print('Failed to nuke guestbook:', e)
+        return ("Failed to nuke", 500)
+
+    return render_template_string('<html><body style="background:black;color:#00ff41;text-align:center;padding:60px;"><h1>GUESTBOOK NUKED</h1><p><a href="/">Home</a></p></body></html>')
 
 
 if __name__ == "__main__":
