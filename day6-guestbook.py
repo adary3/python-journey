@@ -14,7 +14,7 @@ app = Flask(__name__)
 SHEET_URL = "https://docs.google.com/spreadsheets/d/12R_GxZlXCPkkQMHTJ9dtbINljC-daLMJfTYe-vcD0ik/edit?usp=sharing"
 
 # Replace this with your Google Form 'action' POST URL if you want submissions to go there.
-FORM_URL = "https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse"
+FORM_URL = "https://docs.google.com/spreadsheets/d/12R_GxZlXCPkkQMHTJ9dtbINljC-daLMJfTYe-vcD0ik/edit?usp=sharing"
 
 # Local storage for messages so they appear on the homepage
 GUESTBOOK_FILE = "guestbook.json"
