@@ -1,5 +1,5 @@
 # ========================================
-# DAY 6: KLEON GUESTBOOK – MESSAGES THAT NEVER DIE
+# DAY 7: KLEON GUESTBOOK WITH ADMIN NUKE – MESSAGES THAT NEVER DIE
 # ========================================
 
 from flask import Flask, render_template_string, request, redirect
